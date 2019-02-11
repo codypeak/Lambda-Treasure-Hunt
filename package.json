@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/codypeak/Lambda-Treasure-Hunt/issues"
   },
-  "homepage": "https://github.com/codypeak/Lambda-Treasure-Hunt#readme"
+  "homepage": "https://github.com/codypeak/Lambda-Treasure-Hunt#readme",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
 }
