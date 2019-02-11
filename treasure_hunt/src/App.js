@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 
+console.log(process.env.REACT_APP_TREASURE_HUNT_API_KEY)
+
 class App extends Component {
   constructor(props) {
     super(props);
