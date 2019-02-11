@@ -1,0 +1,20 @@
+{
+  "name": "Lambda-Treasure-Hunt",
+  "version": "1.0.0",
+  "description": "Welcome to the first annual Lambda Treasure Hunt!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codypeak/Lambda-Treasure-Hunt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/codypeak/Lambda-Treasure-Hunt/issues"
+  },
+  "homepage": "https://github.com/codypeak/Lambda-Treasure-Hunt#readme"
+}
