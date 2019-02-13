@@ -11,19 +11,21 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      graph: {},
-      map: {},
+      graph: {},  //can use for coordinates
+      visited: {},  //tracks where weve been
       currentRoom: '',
       prevRoom: '',
       room_id: '',
+      title: '',
       description: '', 
       coordinates: '',
       players: [],
       items: [],
-      exits: [],
+      exits: [],  //holds currentRoom exits.  this.state.exits.map so only create button if there is an exit that direction.
       cooldown: '',
       errors: [],
-      messages: []
+      messages: [], 
+      opposite_directions: {'n': 's', 's':'n', 'e': 'w', 'w': 'e'}
     };
   }
 
@@ -45,8 +47,32 @@ class App extends Component {
     axios
       .get(initUrl, reqOptions)
       .then(response => {
-          console.log(response)
-          //save map here? 
+        console.log(response)
+        let currentRoom = (response.data.room_id);
+        let coordinates = (response.data.coordinates);
+        let x_coord = Number(coordinates.slice(1,3));
+        let y_coord = Number(coordinates.slice(4,6));
+        let graph = Object.assign({}, this.state.graph);
+        let exits = response.data.exits;
+        if (!(currentRoom in graph) ) {
+          graph[currentRoom] = [x_coord, y_coord]
+        }
+        console.log(graph);
+        let visited = Object.assign({}, this.state.visited);
+        let cardinal_directions = ['n', 's', 'e', 'w']
+        if (!(currentRoom in visited) ) {
+          //if not in visited then dont have ? associated with each direction
+          let temp = {};
+          for (let direction of cardinal_directions) {
+            if (exits.includes(direction)) {
+              temp[direction] = '?'; //initialize question mark
+            } else {
+              temp[direction] = null;
+            }
+          }
+          graph[currentRoom] = temp; //first time visit room update it with ?
+        }
+        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description });
       })
       .catch(err => console.log(err));
   }
@@ -66,8 +92,31 @@ class App extends Component {
       .post(moveUrl, data, reqOptions)
       .then(response => {
         console.log(response.data)
-        let currentRoom = (response.data);
-        this.setState({ ...this.state, currentRoom: response.data });
+        let currentRoom = (response.data.room_id);
+        let coordinates = (response.data.coordinates);
+        let x_coord = Number(coordinates.slice(1,3));
+        let y_coord = Number(coordinates.slice(4,6));
+        let graph = Object.assign({}, this.state.graph);
+        let exits = response.data.exits;
+        if (!(currentRoom in graph) ) {
+          graph[currentRoom] = [x_coord, y_coord]
+        }
+        console.log(graph);
+        let visited = Object.assign({}, this.state.visited);
+        let cardinal_directions = ['n', 's', 'e', 'w']
+        if (!(currentRoom in visited) ) {
+          //if not in visited then dont have ? associated with each direction
+          let temp = {};
+          for (let direction of cardinal_directions) {
+            if (exits.includes(direction)) {
+              temp[direction] = '?'; //initialize question mark
+            } else {
+              temp[direction] = null;
+            }
+          }
+          graph[currentRoom] = temp; //first time visit room update it with ?
+        }
+        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description });
       })
       .catch(err => console.log(err))
   };
@@ -93,6 +142,10 @@ class App extends Component {
     let map = JSON.parse(localStorage.getItem('map'));
   };
 
+  //opposite directions
+
+  //bfs
+
   render() {
     return (
       <div className="App">
@@ -100,20 +153,20 @@ class App extends Component {
           Lambda Treasure Hunt
         </header>
         <div className="button-wrapper">
-          <button onClick={this.move_request('n')}>North</button>
-          <button onClick={this.move_request('s')}>South</button>
-          <button onClick={this.move_request('e')}>East</button>
-          <button onClick={this.move_request('w')}>West</button>
+          <button onClick={() => this.move_request('n')}>North</button>
+          <button onClick={() => this.move_request('s')}>South</button>
+          <button onClick={() => this.move_request('e')}>East</button>
+          <button onClick={() => this.move_request('w')}>West</button>
         </div>
         <div className="button-wrapper-2">
-          <button onClick={this.move_request()}>Automatic Traversal</button>
+          <button onClick={this.move_request}>Automatic Traversal</button>
         </div>
         <div className="room-info">
           <h3>You are here:</h3>
-          <p>The room you are currently in is: ${this.state.currentRoom.title} ${this.state.currentRoom.room_id}</p>
-          <p>Room description: ${this.state.currentRoom.description}</p>
+          <p>The room you are currently in is: {this.state.currentRoom.title} {this.state.currentRoom.room_id}</p>
+          <p>Room description: {this.state.currentRoom.description}</p>
           <p>Exits: </p>
-          <p>Cooldown: ${this.state.currentRoom.cooldown}</p>
+          <p>Cooldown: {this.state.currentRoom.cooldown}</p>
         </div>
       </div>
     );
