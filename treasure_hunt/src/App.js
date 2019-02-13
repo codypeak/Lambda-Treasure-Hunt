@@ -45,6 +45,7 @@ class App extends Component {
       .get(initUrl, reqOptions)
       .then(response => {
           console.log(response)
+          //save map here? 
       })
       .catch(err => console.log(err));
   }
@@ -61,7 +62,7 @@ class App extends Component {
     let prevRoom = this.currentRoom;
   
     axios
-      .post(moveUrl, data, options)
+      .post(moveUrl, data, reqOptions)
       .then(response => {
         console.log(response.data)
         let currentRoom = (response.data);
@@ -70,13 +71,13 @@ class App extends Component {
       .catch(err => console.log(err))
   };
 
-  cool_cool_cool = () => {
-    setInterval(() => {
-      this.perambulate();
-    }, 6000); //un-hard code this
-  };
+  // cooldown_interval = () => {
+  //   setInterval(() => {
+  //     this.perambulate();
+  //   }, 6000); //un-hard code this
+  // };
 
-  // componentWillMount() {
+  // componentWillUnmount() {
   //   clearInterval(this.interval);
   // }
 
@@ -91,10 +92,10 @@ class App extends Component {
         <header className="App-header">
         </header>
         <div className="button-wrapper">
-          <button onClick={this.travel('n')}>North</button>
-          <button onClick={this.travel('s')}>South</button>
-          <button onClick={this.travel('e')}>East</button>
-          <button onClick={this.travel('w')}>West</button>
+          <button onClick={this.move_request('n')}>North</button>
+          <button onClick={this.move_request('s')}>South</button>
+          <button onClick={this.move_request('e')}>East</button>
+          <button onClick={this.move_request('w')}>West</button>
         </div>
       </div>
     );
