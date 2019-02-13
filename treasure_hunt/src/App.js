@@ -43,6 +43,7 @@ class App extends Component {
             Authorization: Token,
         }
     }
+    
 
     axios
       .get(initUrl, reqOptions)
@@ -71,11 +72,16 @@ class App extends Component {
             }
           }
           graph[currentRoom] = temp; //first time visit room update it with ?
+        } else {
+          //if currentRoom is in visited update. return exit directions, set to next room
+          let next_room_id = null;
+          next_room_id = visited[this.state.currentRoom.room_id];
+          //data[next_room_id] = next_room_id;
         }
         this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description });
       })
       .catch(err => console.log(err));
-  }
+  };
 
   move_request = direction => {
     const moveUrl = 'https://lambda-treasure-hunt.herokuapp.com/api/adv/move/';
@@ -115,6 +121,11 @@ class App extends Component {
             }
           }
           graph[currentRoom] = temp; //first time visit room update it with ?
+        } else {
+          //if currentRoom is in visited update. return exit directions, set to next room
+          let next_room_id = null;
+          next_room_id = visited[this.state.currentRoom.room_id];
+          //data[next_room_id] = next_room_id;
         }
         this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description });
       })
@@ -158,9 +169,9 @@ class App extends Component {
           <button onClick={() => this.move_request('e')}>East</button>
           <button onClick={() => this.move_request('w')}>West</button>
         </div>
-        <div className="button-wrapper-2">
+        {/* <div className="button-wrapper-2">
           <button onClick={this.move_request}>Automatic Traversal</button>
-        </div>
+        </div> */}
         <div className="room-info">
           <h3>You are here:</h3>
           <p>The room you are currently in is: {this.state.currentRoom.title} {this.state.currentRoom.room_id}</p>
