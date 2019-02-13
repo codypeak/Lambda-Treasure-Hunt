@@ -15,6 +15,7 @@ class App extends Component {
       map: {},
       currentRoom: '',
       prevRoom: '',
+      room_id: '',
       description: '', 
       coordinates: '',
       players: [],
@@ -59,7 +60,7 @@ class App extends Component {
         }   
     }
     const data = { direction: direction };
-    let prevRoom = this.currentRoom;
+    let prevRoom = this.state.currentRoom;
   
     axios
       .post(moveUrl, data, reqOptions)
@@ -74,28 +75,45 @@ class App extends Component {
   // cooldown_interval = () => {
   //   setInterval(() => {
   //     this.perambulate();
-  //   }, 6000); //un-hard code this
+  //   }, 4000); //un-hard code this
   // };
 
   // componentWillUnmount() {
   //   clearInterval(this.interval);
   // }
 
-  perambulate = () => {
-    let currentRoom = this.currentRoom;
-    console.log('Current room: ', currentRoom.room_id)
-  }
+  // perambulate = () => {
+  //   let currentRoom = this.state.currentRoom;
+  //   console.log('Current room: ', currentRoom.room_id)
+  // }
+
+  save_map = (direction, currentRoom, prevRoom) => {
+    localStorage.setItem('map', JSON.stringify(map));
+
+    let map = JSON.parse(localStorage.getItem('map'));
+  };
 
   render() {
     return (
       <div className="App">
         <header className="App-header">
+          Lambda Treasure Hunt
         </header>
         <div className="button-wrapper">
           <button onClick={this.move_request('n')}>North</button>
           <button onClick={this.move_request('s')}>South</button>
           <button onClick={this.move_request('e')}>East</button>
           <button onClick={this.move_request('w')}>West</button>
+        </div>
+        <div className="button-wrapper-2">
+          <button onClick={this.move_request()}>Automatic Traversal</button>
+        </div>
+        <div className="room-info">
+          <h3>You are here:</h3>
+          <p>The room you are currently in is: ${this.state.currentRoom.title} ${this.state.currentRoom.room_id}</p>
+          <p>Room description: ${this.state.currentRoom.description}</p>
+          <p>Exits: </p>
+          <p>Cooldown: ${this.state.currentRoom.cooldown}</p>
         </div>
       </div>
     );

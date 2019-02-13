@@ -1,25 +1,25 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
 
 
-class Map extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            map: {},
-            currentRoom: 0,
-        };
-    }
+// class Map extends React.Component {
+//     constructor() {
+//         super();
+//         this.state = {
+//             map: {},
+//             currentRoom: 0,
+//         };
+//     }
 
 
 
-    render() {
-        return(
-            <div>
+//     render() {
+//         return(
+//             <div>
 
-            </div>
-        )
-    }
+//             </div>
+//         )
+//     }
 
-}
+// }
 
-export default Map;
+// export default Map;
