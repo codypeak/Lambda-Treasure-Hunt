@@ -44,7 +44,6 @@ class App extends Component {
         }
     }
     
-
     axios
       .get(initUrl, reqOptions)
       .then(response => {
@@ -62,6 +61,7 @@ class App extends Component {
         let visited = Object.assign({}, this.state.visited);
         let cardinal_directions = ['n', 's', 'e', 'w']
         if (!(currentRoom in visited) ) {
+          
           //if not in visited then dont have ? associated with each direction
           let temp = {};
           for (let direction of cardinal_directions) {
@@ -71,14 +71,9 @@ class App extends Component {
               temp[direction] = null;
             }
           }
-          graph[currentRoom] = temp; //first time visit room update it with ?
-        } else {
-          //if currentRoom is in visited update. return exit directions, set to next room
-          let next_room_id = null;
-          next_room_id = visited[this.state.currentRoom.room_id];
-          //data[next_room_id] = next_room_id;
-        }
-        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description });
+          visited[currentRoom] = temp; //first time visit room update it with ?
+        } 
+        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited });
       })
       .catch(err => console.log(err));
   };
@@ -92,7 +87,7 @@ class App extends Component {
         }   
     }
     const data = { direction: direction };
-    let prevRoom = this.state.currentRoom;
+    //let prevRoom = this.state.currentRoom;
   
     axios
       .post(moveUrl, data, reqOptions)
@@ -109,28 +104,34 @@ class App extends Component {
         }
         console.log(graph);
         let visited = Object.assign({}, this.state.visited);
+        console.log(visited);
         let cardinal_directions = ['n', 's', 'e', 'w']
         if (!(currentRoom in visited) ) {
+          console.log('visited conditional')
           //if not in visited then dont have ? associated with each direction
           let temp = {};
-          for (let direction of cardinal_directions) {
-            if (exits.includes(direction)) {
-              temp[direction] = '?'; //initialize question mark
+          for (let d of cardinal_directions) {
+            if (exits.includes(d)) {
+              temp[d] = '?'; //initialize question mark
             } else {
-              temp[direction] = null;
+              temp[d] = null;
             }
           }
-          graph[currentRoom] = temp; //first time visit room update it with ?
-        } else {
-          //if currentRoom is in visited update. return exit directions, set to next room
-          let next_room_id = null;
-          next_room_id = visited[this.state.currentRoom.room_id];
-          //data[next_room_id] = next_room_id;
-        }
-        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description });
+          visited[currentRoom] = temp; //first time visit room update it with ?
+        };
+        console.log(visited[currentRoom]);
+        console.log(visited[this.state.currentRoom]);
+        visited[currentRoom][this.state.opposite_directions[direction]] = this.state.currentRoom;
+        visited[this.state.currentRoom][direction] = currentRoom;
+        this.save_map('map', visited);
+        this.save_map('coordinates', graph);
+        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited });
       })
       .catch(err => console.log(err))
   };
+//   `graph[response.data.room_id][opposite] = this.state.roomId;`
+// `graph[this.state.roomId][direction] = response.data.room_d`
+// `opposite = inverse[direction]`
 
   // cooldown_interval = () => {
   //   setInterval(() => {
@@ -147,17 +148,17 @@ class App extends Component {
   //   console.log('Current room: ', currentRoom.room_id)
   // }
 
-  save_map = (direction, currentRoom, prevRoom) => {
-    localStorage.setItem('map', JSON.stringify(map));
-
-    let map = JSON.parse(localStorage.getItem('map'));
-  };
-
-  //opposite directions
+  save_map = (name, value) => {
+    localStorage.setItem(name, JSON.stringify(value));  //pass in a string name, then data being saved wil be value
+  };  
 
   //bfs
 
   render() {
+    let map = JSON.parse(localStorage.getItem('map'));
+    console.log(map)
+    let coordinates = JSON.parse(localStorage.getItem('coordinates'));
+    console.log(coordinates)
     return (
       <div className="App">
         <header className="App-header">
@@ -174,10 +175,10 @@ class App extends Component {
         </div> */}
         <div className="room-info">
           <h3>You are here:</h3>
-          <p>The room you are currently in is: {this.state.currentRoom.title} {this.state.currentRoom.room_id}</p>
-          <p>Room description: {this.state.currentRoom.description}</p>
+          <p>The room you are currently in is: {this.state.title} {this.state.room_id}</p>
+          <p>Room description: {this.state.description}</p>
           <p>Exits: </p>
-          <p>Cooldown: {this.state.currentRoom.cooldown}</p>
+          <p>Cooldown: {this.state.cooldown}</p>
         </div>
       </div>
     );
