@@ -134,25 +134,47 @@ class App extends Component {
     localStorage.setItem(name, JSON.stringify(value));  //pass in a string name, then data being saved wil be value
   };  
   
-  // cooldown_interval = () => {
-  //   setInterval(() => {
-  //     this.perambulate();
-  //   }, 4000); //un-hard code this
-  // };
+  cooldown_interval = () => {
+    setInterval(() => {
+      this.perambulate();
+      console.log('cooldown: '  this.state.currentRoom.cooldown);
+    }, 4000); //un-hard code this. set it to response data for penalties etc? 
+  };
 
-  // componentWillUnmount() {
-  //   clearInterval(this.interval);
-  // }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
 
   route_finder = () => {
 
   };
 
-  backtracker = () => {
-
+  backtracker = currentRoom => {
+    let queue = [];
+    let visited = [];  // can we use visited from outside this function? or call this something else? 
+    let map = JSON.parse(localStorage.getItem('map'));
+    queue.push([currentRoom]);
+    while (queue.length > 0) {
+      let path = queue.shift();
+      console.log("path: ", path)
+      let room_number = path[path.length - 1];
+      if (!visited.includes(room_number)) {
+        visited.push(room_number);
+        for (let exit of Object.entries(map[room_number])) {
+          console.log('exit', exit);
+          if(map[room_number][exit] === "?") {
+            return path;
+          } else { 
+            let duplicate_path = path.slice();  //slice adds shallow copy
+            duplicate_path.push(map[room_number][exit]);
+            queue.push(duplicate_path);
+          }
+        }
+      };
+    }
   };
 
-  direction_choices = (currentRoom) => {
+  direction_choices = currentRoom => {
     if ('n' in visited[this.state.currentRoom] && visited[this.state.currentRoom]['n'] === "?") {
       return 'n';
     } else if ('s' in visited[this.state.currentRoom] && visited[this.state.currentRoom]['s'] === "?") {
@@ -161,6 +183,7 @@ class App extends Component {
       return 'e';
     } else if ('w' in visited[this.state.currentRoom] && visited[this.state.currentRoom]['w'] === "?") {
       return 'w';
+    }
   };
 
   perambulate = () => {
@@ -196,7 +219,7 @@ class App extends Component {
         </div>
       </div>
     );
-  }
-}
+  };
+};
 
 export default App;
