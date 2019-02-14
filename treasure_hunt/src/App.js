@@ -137,7 +137,7 @@ class App extends Component {
   cooldown_interval = () => {
     setInterval(() => {
       this.perambulate();
-      console.log('cooldown: '  this.state.currentRoom.cooldown);
+      console.log('cooldown: ', this.state.currentRoom.cooldown);
     }, 4000); //un-hard code this. set it to response data for penalties etc? 
   };
 
@@ -145,8 +145,18 @@ class App extends Component {
     clearInterval(this.interval);
   }
 
-  route_finder = () => {
-
+  route_finder = (currentRoom, path, graph) => {
+    let directions = [];
+    for (let i in path) {
+      next_room = path[i];
+      for (let direction in graph[this.state.currentRoom]) {
+        if (graph[this.state.currentRoom] === next_room) {
+          directions.push(direction);
+        }
+      }
+      let currentRoom = visited[this.state.currentRoom][directions.length - 1];  
+      //return directions?
+    }
   };
 
   backtracker = currentRoom => {
