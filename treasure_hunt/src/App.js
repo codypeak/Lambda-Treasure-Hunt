@@ -61,7 +61,6 @@ class App extends Component {
         let visited = Object.assign({}, this.state.visited);
         let cardinal_directions = ['n', 's', 'e', 'w']
         if (!(currentRoom in visited) ) {
-          
           //if not in visited then dont have ? associated with each direction
           let temp = {};
           for (let direction of cardinal_directions) {
@@ -199,6 +198,29 @@ class App extends Component {
   perambulate = () => {
     let currentRoom = this.state.currentRoom;
     console.log('Current room: ', currentRoom.room_id)
+    let backtrack = [];
+    let rooms = [];
+    let traversal_path = [];
+    while (visited.length < 500) {
+      rooms.push(currentRoom);
+      if (backtrack.length === 0) {
+        let unexplored_exit = direction_choices(currentRoom);
+          if (!unexplored_exit) {
+            let retrace_path = this.backtracker(currentRoom, visited);
+            let backtrack = this.route_finder()
+          } else {
+            traversal_path.append(unexplored_exit);
+            let next_room = graph[currentRoom.length - 1][unexplored_exit];  //this.state?  
+            let prev_direction = this.state.opposite_directions[unexplored_exit];
+            let next_room = visited[currentRoom][unexplored_exit];
+            let currentRoom = visited[next_room][prev_direction];
+            let currentRoom = next_room;
+          }
+      } else {
+        let unexplored_exit = this.backtrack.unshift();
+        //copy paste
+      }
+    };
   };
 
   render() {
