@@ -129,10 +129,11 @@ class App extends Component {
       })
       .catch(err => console.log(err))
   };
-//   `graph[response.data.room_id][opposite] = this.state.roomId;`
-// `graph[this.state.roomId][direction] = response.data.room_d`
-// `opposite = inverse[direction]`
 
+  save_map = (name, value) => {
+    localStorage.setItem(name, JSON.stringify(value));  //pass in a string name, then data being saved wil be value
+  };  
+  
   // cooldown_interval = () => {
   //   setInterval(() => {
   //     this.perambulate();
@@ -143,16 +144,29 @@ class App extends Component {
   //   clearInterval(this.interval);
   // }
 
-  // perambulate = () => {
-  //   let currentRoom = this.state.currentRoom;
-  //   console.log('Current room: ', currentRoom.room_id)
-  // }
+  route_finder = () => {
 
-  save_map = (name, value) => {
-    localStorage.setItem(name, JSON.stringify(value));  //pass in a string name, then data being saved wil be value
-  };  
+  };
 
-  //bfs
+  backtracker = () => {
+
+  };
+
+  direction_choices = (currentRoom) => {
+    if ('n' in visited[this.state.currentRoom] && visited[this.state.currentRoom]['n'] === "?") {
+      return 'n';
+    } else if ('s' in visited[this.state.currentRoom] && visited[this.state.currentRoom]['s'] === "?") {
+      return 's';
+    } else if ('e' in visited[this.state.currentRoom] && visited[this.state.currentRoom]['e'] === "?") {
+      return 'e';
+    } else if ('w' in visited[this.state.currentRoom] && visited[this.state.currentRoom]['w'] === "?") {
+      return 'w';
+  };
+
+  perambulate = () => {
+    let currentRoom = this.state.currentRoom;
+    console.log('Current room: ', currentRoom.room_id)
+  };
 
   render() {
     let map = JSON.parse(localStorage.getItem('map'));
