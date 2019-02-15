@@ -21,12 +21,13 @@ class App extends Component {
       players: [],
       items: [],
       exits: [],  //holds currentRoom exits.  this.state.exits.map so only create button if there is an exit that direction.
-      cooldown: 10,
+      cooldown: '',
       errors: [],
       messages: [], 
       opposite_directions: {'n': 's', 's':'n', 'e': 'w', 'w': 'e'}
     };
-    this.perambulate = this.perambulate.bind(this);
+    // this.perambulate = this.perambulate.bind(this);
+    // this.move_request = this.move_request.bind(this);
   }
 
   componentDidMount() {
@@ -34,9 +35,8 @@ class App extends Component {
   }
 
   init = () => {
-    const Token = 'Token ' + process.env.REACT_APP_TREASURE_HUNT_API_KEY;
-    console.log(Token)
-    console.log(process.env)
+    const Token = `Token ${process.env.REACT_APP_TREASURE_HUNT_API_KEY}`;
+    // console.log(Token)
     const initUrl = 'https://lambda-treasure-hunt.herokuapp.com/api/adv/init/';
     const reqOptions = {
         headers: {
@@ -75,14 +75,18 @@ class App extends Component {
           visited[currentRoom] = temp; //first time visit room update it with ?
           console.log(visited);
         } 
-        this.setState({ currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited, cooldown: response.data.cooldown });
+        this.setState({ currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited, cooldown: response.data.cooldown});
       })
       .catch(err => console.log(err));
   };
 
-  move_request = direction => {
+  move_request = (direction) => {
+    console.log(`Attempting to go in the following direction ${direction}`)
+    // await this.cooldown_interval(ms)
+
+    // console.log(`Just paused for ${ms} milliseconds`)
     const moveUrl = 'https://lambda-treasure-hunt.herokuapp.com/api/adv/move/';
-    const Token = 'Token ' + process.env.REACT_APP_TREASURE_HUNT_API_KEY;
+    const Token = `Token ${process.env.REACT_APP_TREASURE_HUNT_API_KEY}`;
     const reqOptions = {
         headers: {
           Authorization: Token,
@@ -126,9 +130,19 @@ class App extends Component {
         console.log(visited)
         this.save_map('map', visited);
         this.save_map('coordinates', graph);
-        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited, cooldown: response.data.cooldown });
+        this.setState({currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited, cooldown: response.data.cooldown });
+        if(Object.keys(this.state.visited).length < 500){
+          setTimeout(this.perambulate, this.state.cooldown * 1000)
+        }
       })
-      .catch(err => console.log(err))
+      .catch(err => {
+        /*If there is an error log the response and set the cool down to the newly likely penalized cooldown */
+        console.log(err.response)
+        this.setState({cooldown : err.response.data.cooldown})
+        setTimeout(this.perambulate, this.state.cooldown * 1000)
+      })
+
+      
   };
 
   save_map = (name, value) => {
@@ -140,18 +154,23 @@ class App extends Component {
   };
 
   route_finder = (currentRoom, path, graph) => {
-    let directions = [];
-    for (let i in path) {
-      let next_room = path[i];
-      for (let direction in graph[currentRoom]) {
-        if (graph[currentRoom] === next_room) {
-          directions.push(direction);
+    console.log(`The path is set: ${path}`)
+    let room = currentRoom;
+    const directions = [] 
+    let count = 1 
+    while (count < path.length){
+      for(let exit in graph[room]){
+        if(graph[room][exit] === path[count]){
+          directions.push(exit)
+          break; 
         }
       }
+      room = path[count]
+      count += 1
     }
-    return directions;
+    return directions
   };
-
+/*BFS path */
   backtracker = currentRoom => {
     let queue = [];
     let visited = [];  // can we use visited from outside this function? or call this something else? 
@@ -180,7 +199,7 @@ class App extends Component {
   };
 
   direction_choices = currentRoom => {
-    console.log(currentRoom);
+    console.log(currentRoom, "currentRoom");
     console.log(this.state.exits);
     if (this.state.exits.includes('n') && this.state.visited[currentRoom]['n'] === "?") {
       console.log('move north')
@@ -199,22 +218,45 @@ class App extends Component {
       return null;
     }
   };
-
-  async perambulate() {
+  
+  perambulate = () => {
     let currentRoom = this.state.currentRoom;
     console.log('Current room: ', currentRoom)
     let backtrack = [];
     let rooms = [];
     let unexplored_exit = null;
     let traversal_path = [];
-    while (Object.keys(this.state.visited).length < 500) {
+    // while (rooms.length < 500) {
       const visited = Object.assign({}, this.state.visited);
+      // const ms = (this.state.cooldown * 1000) + 750
+      
+
+      if (traversal_path.length > 50) {
+        console.log(traversal_path);
+        // break;
+      }
+      /*Get the currentRoom */
       currentRoom = this.state.currentRoom
-      rooms.push(currentRoom);
-      if (backtrack.length === 0) {
-        unexplored_exit = this.direction_choices(currentRoom);
+
+      /*check of the currentRoom is in rooms array if it is not add it */
+      if(rooms.includes(currentRoom) === false){
+        rooms.push(currentRoom);
       }
 
+      /*After pushing the room check if we have reached 500 */
+      if (rooms.length === 500) {
+        console.log(this.state.graph, this.state.visited);
+        // break;
+        console.log("All finished")
+        return 
+      }
+
+      /*check if a there is a set path already if it not find out if there is a direction untraveled */
+      if (backtrack.length === 0) {
+        console.log("find solo direction")
+        unexplored_exit = this.direction_choices(currentRoom);
+      }
+      /*if there is no set path and after checking for a direction untraveled is null create a set path to a room with an untraveled exit */
       if (backtrack.length === 0 && unexplored_exit === null) {
             console.log('start backtrack')
             let retrace_path = this.backtracker(currentRoom, visited);
@@ -223,26 +265,34 @@ class App extends Component {
             console.log(backtrack)
       } 
 
+      /*This part of the code will make the move  if backtrack is greater than 0 we already have a preset path to follow take it
+        else  use the direction returned from the direction_choices function. 
+      */
       if (backtrack.length > 0) {
+        console.log("traveling set path")
         console.log(backtrack)
         unexplored_exit = backtrack.shift();
         traversal_path.push(unexplored_exit);
         this.move_request(unexplored_exit);  //response updates
+        // setTimeout(this.move_request(unexplored_exit), ms)
       } else {
-        traversal_path.push(unexplored_exit);
-        this.move_request(unexplored_exit);  
+        /*if there is no path*/
+        if(unexplored_exit === null || unexplored_exit === undefined){
+          /*The above is checking to make sure unexplored_exit is an actual direction if it is not return out of the function after console logging */
+          console.log("SOMETHING IS WRONG")
+          // break 
+          return 
+        } else {
+          console.log("traveling one direction")
+          traversal_path.push(unexplored_exit);
+  
+          this.move_request(unexplored_exit);
+        }
+        // setTimeout(this.move_request(unexplored_exit), ms)
       }
 
-      if (Object.keys(visited).length === 500) {
-        console.log(this.state.graph, this.state.visited);
-        break;
-      }
-      // if (traversal_path.length > 5) {
-      //   console.log(traversal_path);
-      //   break;
-      // }
-      await this.cooldown_interval(this.state.cooldown*3000);
-    };
+      
+    // };
   };
 
   render() {
@@ -250,6 +300,10 @@ class App extends Component {
     console.log(map)
     let coordinates = JSON.parse(localStorage.getItem('coordinates'));
     console.log(coordinates)
+    if(map){
+      console.log(`Rooms visited so far: ${Object.keys(map).length}`)
+    }
+    console.log('Total rooms visited: ', Object.keys(this.state.visited).length);
     return (
       <div className="App">
         <header className="App-header">
@@ -268,8 +322,8 @@ class App extends Component {
           <h3>You are here:</h3>
           <p>The room you are currently in is: {this.state.title} {this.state.room_id}</p>
           <p>Room description: {this.state.description}</p>
-          <p>Exits: </p>
-          <p>Cooldown: {this.state.cooldown}</p>
+          <p>Exits: {this.state.exits}</p>
+          <p>Cooldown:{this.state.cooldown}</p>
         </div>
       </div>
     );
