@@ -21,7 +21,7 @@ class App extends Component {
       players: [],
       items: [],
       exits: [],  //holds currentRoom exits.  this.state.exits.map so only create button if there is an exit that direction.
-      cooldown: '',
+      cooldown: 10,
       errors: [],
       messages: [], 
       opposite_directions: {'n': 's', 's':'n', 'e': 'w', 'w': 'e'}
@@ -75,7 +75,7 @@ class App extends Component {
           visited[currentRoom] = temp; //first time visit room update it with ?
           console.log(visited);
         } 
-        this.setState({ currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited });
+        this.setState({ currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited, cooldown: response.data.cooldown });
       })
       .catch(err => console.log(err));
   };
@@ -121,12 +121,12 @@ class App extends Component {
           visited[currentRoom] = temp; //first time visit room update it with ?
         };
         console.log(visited[currentRoom]);
-        console.log(visited[this.state.currentRoom]);
         visited[currentRoom][this.state.opposite_directions[direction]] = this.state.currentRoom;
         visited[this.state.currentRoom][direction] = currentRoom;
+        console.log(visited)
         this.save_map('map', visited);
         this.save_map('coordinates', graph);
-        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited });
+        this.setState({ ...this.state, currentRoom: response.data.room_id, exits: response.data.exits, title: response.data.title, graph: graph, description: response.data.description, visited: visited, cooldown: response.data.cooldown });
       })
       .catch(err => console.log(err))
   };
@@ -183,14 +183,19 @@ class App extends Component {
     console.log(currentRoom);
     console.log(this.state.exits);
     if (this.state.exits.includes('n') && this.state.visited[currentRoom]['n'] === "?") {
+      console.log('move north')
       return 'n';
     } else if (this.state.exits.includes('s') && this.state.visited[currentRoom]['s'] === "?") {
+      console.log('move south')
       return 's';
     } else if (this.state.exits.includes('e') && this.state.visited[currentRoom]['e'] === "?") {
+      console.log('move east')
       return 'e';
     } else if (this.state.exits.includes('w') && this.state.visited[currentRoom]['w'] === "?") {
+      console.log('move west')
       return 'w';
     } else {
+      console.log('null path')
       return null;
     }
   };
@@ -208,13 +213,14 @@ class App extends Component {
       rooms.push(currentRoom);
       if (backtrack.length === 0) {
         unexplored_exit = this.direction_choices(currentRoom);
-        break;
       }
 
       if (backtrack.length === 0 && unexplored_exit === null) {
             console.log('start backtrack')
             let retrace_path = this.backtracker(currentRoom, visited);
+            console.log(retrace_path)
             backtrack = this.route_finder(currentRoom, retrace_path, visited);
+            console.log(backtrack)
       } 
 
       if (backtrack.length > 0) {
@@ -231,7 +237,11 @@ class App extends Component {
         console.log(this.state.graph, this.state.visited);
         break;
       }
-      await this.cooldown_interval(this.state.cooldown*1200);
+      // if (traversal_path.length > 5) {
+      //   console.log(traversal_path);
+      //   break;
+      // }
+      await this.cooldown_interval(this.state.cooldown*3000);
     };
   };
 
